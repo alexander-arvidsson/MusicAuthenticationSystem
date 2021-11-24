@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using SharpDX.DirectSound;
 
 namespace MusicAuthenticationSystem.Data
 {
