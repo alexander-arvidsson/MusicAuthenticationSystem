@@ -33,6 +33,7 @@ namespace MusicAuthenticationSystem
             services.AddScoped<CreationRepository>();
             services.AddScoped<IHash, HashRepository>();
             services.AddScoped<UserRepository>();
+            services.AddScoped<PianoService>();
             services.AddDbContext<DatabaseContext>(options =>
             {
                 options.UseSqlite("Data Source = Credentials.db");

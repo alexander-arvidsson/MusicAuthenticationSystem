@@ -1,0 +1,70 @@
+﻿@page "/piano"
+@using MusicAuthenticationSystem.Data
+@inject PianoService pianoService;
+@inject IJSRuntime _jsRuntime;
+
+
+<h3>Piano</h3>
+<div class="row_bg_light">
+    @foreach (var pk in octave)
+    {
+        <audio id=@pk src=@CreatePath(pk) />
+        <button class=@GetNoteClass(pk) @onclick="(() => PlaySound(pk))">@GetNoteName(pk)</button>
+
+    }
+</div>
+
+<div class="row_bg_light">
+    <button @onclick="(() => PlayBackOrRetry(false))">Playback</button>
+    <button @onclick="(() => PlayBackOrRetry(true))">Clear Music</button>
+</div>
+
+@code {
+    //Customize buttons in a new css class for layout
+    private string path = "../PianoResources/";
+    private string[] octave = { "c4", "c4s","d4", "d4s", "e4", "f4", "f4s", "g4", "g4s", "a4", "a4s", "b4" };
+    private List<string> storedNotes = new List<string>();
+
+    private async Task PlaySound(string note)
+    {
+        storedNotes.Add(note);
+        await _jsRuntime.InvokeAsync<string>("PlayAudio", note);
+    }
+
+    private async Task PlayBackOrRetry(bool willRetry)
+    {
+        if(willRetry)
+        {
+            storedNotes.Clear();
+
+        } else
+        {
+            foreach(var n in storedNotes)
+            {
+                await PlayBackAsync(n);
+            }
+        }
+    }
+
+    private async Task PlayBackAsync(string note)
+    {
+        await _jsRuntime.InvokeAsync<string>("PlayAudio", note);
+        await Task.Delay(500);
+    }
+
+    private string CreatePath(string source)
+    {
+        return path + source + ".wav";
+    }
+
+    private string GetNoteClass(string note)
+    {
+        return note.Contains("s") ? "blackNote" : "whiteNote";
+    }
+
+    private string GetNoteName(string note)
+    {
+        string rep = note.Replace("s", "#");
+        return rep.ToUpper();
+    }
+}
