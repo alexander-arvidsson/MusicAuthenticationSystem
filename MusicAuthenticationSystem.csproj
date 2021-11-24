@@ -7,9 +7,51 @@
   <ItemGroup>
     <None Remove="Microsoft.Data.Sqlite.Core" />
     <None Remove="Microsoft.EntityFrameworkCore" />
+    <None Remove="SharpDX.DirectSound" />
+    <None Remove="SharpDX" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="6.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.0" />
+    <PackageReference Include="SharpDX.DirectSound" Version="4.2.0" />
+    <PackageReference Include="SharpDX" Version="4.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="wwwroot\js\" />
+    <Folder Include="wwwroot\PianoResources\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="wwwroot\js\" />
+    <Content Remove="wwwroot\js\sounds.js" />
+    <Content Remove="wwwroot\PianoResources\.DS_Store" />
+    <Content Remove="wwwroot\PianoResources\a4#.wav" />
+    <Content Remove="wwwroot\PianoResources\a4.wav" />
+    <Content Remove="wwwroot\PianoResources\b4.wav" />
+    <Content Remove="wwwroot\PianoResources\c4#.wav" />
+    <Content Remove="wwwroot\PianoResources\c4.wav" />
+    <Content Remove="wwwroot\PianoResources\d4#.wav" />
+    <Content Remove="wwwroot\PianoResources\d4.wav" />
+    <Content Remove="wwwroot\PianoResources\e4.wav" />
+    <Content Remove="wwwroot\PianoResources\f4#.wav" />
+    <Content Remove="wwwroot\PianoResources\f4.wav" />
+    <Content Remove="wwwroot\PianoResources\g4#.wav" />
+    <Content Remove="wwwroot\PianoResources\g4.wav" />
+    <Content Remove="wwwroot\PianoResources\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="wwwroot\js\sounds.js" />
+    <None Include="wwwroot\PianoResources\.DS_Store" />
+    <None Include="wwwroot\PianoResources\a4#.wav" />
+    <None Include="wwwroot\PianoResources\a4.wav" />
+    <None Include="wwwroot\PianoResources\b4.wav" />
+    <None Include="wwwroot\PianoResources\c4#.wav" />
+    <None Include="wwwroot\PianoResources\c4.wav" />
+    <None Include="wwwroot\PianoResources\d4#.wav" />
+    <None Include="wwwroot\PianoResources\d4.wav" />
+    <None Include="wwwroot\PianoResources\e4.wav" />
+    <None Include="wwwroot\PianoResources\f4#.wav" />
+    <None Include="wwwroot\PianoResources\f4.wav" />
+    <None Include="wwwroot\PianoResources\g4#.wav" />
+    <None Include="wwwroot\PianoResources\g4.wav" />
   </ItemGroup>
 </Project>
