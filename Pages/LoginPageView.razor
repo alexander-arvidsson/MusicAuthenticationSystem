@@ -1,0 +1,9 @@
+﻿@page "/userpage/{user}"
+
+<PageComponent user="@user"></PageComponent>
+
+@code {
+    [Parameter]
+    public string user { get; set; }
+
+}

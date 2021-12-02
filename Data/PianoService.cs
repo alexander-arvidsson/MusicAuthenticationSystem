@@ -1,16 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace MusicAuthenticationSystem.Data
 {
     public class PianoService
     {
-        public void SaveNote(string note, List<string> pNotes)
+        public string firstPass;
+        public string secondPass;
+
+        public void SaveNote(string note)
         {
-            pNotes.Add(note);
+            firstPass = note;
         }
 
+        public void SavePass(string first, string second)
+        {
+            firstPass = first ;
+            secondPass = second;
+        }
 
         public void ClearNotes(List<string> pNotes)
         {
