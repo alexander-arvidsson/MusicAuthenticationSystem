@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace MusicAuthenticationSystem.Data
 {
@@ -7,6 +8,7 @@ namespace MusicAuthenticationSystem.Data
     {
         public string firstPass;
         public string secondPass;
+        private Stopwatch watch = new Stopwatch();
 
         public void SaveNote(string note)
         {
@@ -22,6 +24,33 @@ namespace MusicAuthenticationSystem.Data
         public void ClearNotes(List<string> pNotes)
         {
             pNotes.Clear();
+        }
+
+        public int StartNote()
+        {
+            if((int) watch.ElapsedMilliseconds != 0)
+            {
+                int timer = NoteEnd();
+                watch.Restart();
+                return timer;
+            } else
+            {
+                watch.Start();
+                return 1000;
+            }
+        }
+
+        public int NoteEnd()
+        {
+            watch.Stop();
+            TimeSpan stopped = watch.Elapsed;
+            int time = Convert.ToInt32(stopped.TotalMilliseconds);
+            return time;
+        }
+
+        public void StopTimer()
+        {
+            watch.Reset();
         }
 
     }
