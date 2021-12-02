@@ -3,6 +3,8 @@
 @using MusicAuthenticationSystem.Data
 
 @inject UserRepository UserRepo
+@inject PianoService pianoService
+@inject NavigationManager navManager
 
 <h1>Welcome, please enter your credentials.</h1>
 
@@ -12,51 +14,45 @@
             Log in
         </div>
         <div class="col-5 bg-light m-2 justify-content-start">
-            <EditForm Model="@user" OnValidSubmit="Login">
+            <EditForm Model="@user">
                 <label for="username">Username</label>
                 <input type="text" id="username" @bind-value="@user.Username" />
-                <label for="password">Password</label>
-                <input type="text" id="passwordOne" @bind-value="@password" />
-                <button class="btn btn-primary mb-1" type="submit">Submit</button>
-                <p hidden="@messageHandler">@message</p>
             </EditForm>
         </div>
     </div>
 </div>
+<PianoView isLogin="true"></PianoView>
+<button class="btn btn-primary mb-1" @onclick="(() => Login())">Submit and Login</button>
+<p hidden="@messageHandler">@message</p>
 
 @code {
-
     User user = new User();
-    string password = "";
     string message = "";
-
     bool messageHandler = true;
 
-    public void Login()
+    private void Login()
     {
-            Authenticate();
+        Authenticate();
     }
 
-    public void Authenticate()
+    private void Authenticate()
     {
-
-        if (UserRepo.MatchPassword(user, password))
+        string pass = pianoService.firstPass;
+        if (pass == null)
         {
             messageHandler = false;
-            message = "Login successful!";
+            message = "Melody must first be entered and confirmed!";
         }
+        else if (UserRepo.MatchPassword(user, pass))
+        {
+            messageHandler = false;
+            navManager.NavigateTo("/userpage/" + user.Username);
+
+    }
         else
         {
             messageHandler = false;
-            message = "Incorrect password";
+            message = "Incorrect melody, please start over";
         }
-    }
-
-    public void RepeatPassword()
-    {
-        if (UserRepo.MatchPassword(user, password))
-            messageHandler = false;
-        else
-            messageHandler = true;
     }
 }

@@ -1,51 +1,100 @@
-﻿@page "/piano"
-@using MusicAuthenticationSystem.Data
-@inject PianoService pianoService;
-@inject IJSRuntime _jsRuntime;
+﻿@using MusicAuthenticationSystem.Data
+@using System.Text.RegularExpressions
+@inject PianoService pianoService
+@inject IJSRuntime _jsRuntime
+@inject UserRepository UserRepo
+@inject CreationRepository  CreationRepo
 
-
-<h3>Piano</h3>
 <div class="row_bg_light">
     @foreach (var pk in octave)
     {
         <audio id=@pk src=@CreatePath(pk) />
-        <button class=@GetNoteClass(pk) @onclick="(() => PlaySound(pk))">@GetNoteName(pk)</button>
-
+        <button class=@GetNoteClass(pk) @onclick="(() => PlaySound(pk, isFirst))">@GetNoteName(pk)</button>
     }
 </div>
 
 <div class="row_bg_light">
-    <button @onclick="(() => PlayBackOrRetry(false))">Playback</button>
-    <button @onclick="(() => PlayBackOrRetry(true))">Clear Music</button>
+    <button @onclick="(() => PlayBack(isFirst))">Playback</button>
+    <button @onclick="(() => ClearPiano(isFirst, willRetry))">Clear Music</button>
+    @if (!isDone)
+    {
+        <button @onclick="(()=> ConfirmNotes(firstNotes))">Confirm Melody</button>
+        <p hidden="@messageHandler">@msg</p>
+    }
+    @if (isDone)
+    {
+        <button @onclick="(() => Retry(isFirst))">Start over</button>
+    }
+    @if (isDone && !isLogin)
+    {
+        <button class="btn btn-primary mb-1" @onclick="(() => SubmitMelody(firstNotes, secondNotes))">Confirm Melody</button>
+    }
 </div>
 
 @code {
-    //Customize buttons in a new css class for layout
+    [Parameter]
+    public bool isLogin { get; set; }
     private string path = "../PianoResources/";
-    private string[] octave = { "c4", "c4s","d4", "d4s", "e4", "f4", "f4s", "g4", "g4s", "a4", "a4s", "b4" };
+    private string[] octave = { "c4", "c4s", "d4", "d4s", "e4", "f4", "f4s", "g4", "g4s", "a4", "a4s", "b4" };
     private List<string> storedNotes = new List<string>();
+    private string firstNotes = "";
+    private List<string> confirmNotes = new List<string>();
+    private string secondNotes = "";
+    private User user = new User();
+    private string msg = "";
+    private bool messageHandler = true;
+    private bool isDone = false;
+    private bool isFirst = true;
+    private bool willRetry = false;
 
-    private async Task PlaySound(string note)
+    //---------------------- *** Piano functionality starts here *** ----------------------
+    private async Task PlaySound(string note, bool isFirst)
     {
-        storedNotes.Add(note);
+        if (isFirst)
+        {
+            firstNotes += note;
+            storedNotes.Add(note);
+        }
+        else
+        {
+            secondNotes += note;
+            confirmNotes.Add(note);
+        }
         await _jsRuntime.InvokeAsync<string>("PlayAudio", note);
     }
 
-    private async Task PlayBackOrRetry(bool willRetry)
+    private async Task PlayBack(bool isFirst)
     {
-        if(willRetry)
+        List<string> notes = isFirst ? storedNotes : confirmNotes;
+        foreach (var n in notes)
         {
-            storedNotes.Clear();
-
-        } else
-        {
-            foreach(var n in storedNotes)
-            {
-                await PlayBackAsync(n);
-            }
+            await PlayBackAsync(n);
         }
     }
 
+    private void ClearPiano(bool isFirst, bool willRetry)
+    {
+        if (willRetry)
+        {
+            firstNotes = "";
+            secondNotes = "";
+            storedNotes.Clear();
+            confirmNotes.Clear();
+
+        }
+        else if (isFirst)
+        {
+            storedNotes.Clear();
+            firstNotes = "";
+        }
+        else
+        {
+            secondNotes = "";
+            confirmNotes.Clear();
+        }
+    }
+
+    //Find a smoother solution
     private async Task PlayBackAsync(string note)
     {
         await _jsRuntime.InvokeAsync<string>("PlayAudio", note);
@@ -66,5 +115,48 @@
     {
         string rep = note.Replace("s", "#");
         return rep.ToUpper();
+    }
+
+    private void ConfirmNotes(string melody)
+    {
+        if (IsEightMelodyNote(melody))
+        {
+            messageHandler = false;
+            PianoLoginPass();
+            isFirst = false;
+            isDone = true;
+        }
+        else
+        {
+            messageHandler = false;
+            msg = "Melody must be at least eight notes!";
+        }
+    }
+
+    private void Retry(bool first)
+    {
+        willRetry = true;
+        ClearPiano(first, willRetry);
+        isFirst = true;
+        isDone = false;
+    }
+
+    private bool IsEightMelodyNote(string melody)
+    {
+        string m = Regex.Replace(melody, @"[\d]*s*", "");
+        Console.WriteLine(m);
+        return m.Length >= 8;
+    }
+
+    //---------------------- *** Login & Creation functions *** ----------------------
+
+    private void PianoLoginPass()
+    {
+        pianoService.SaveNote(firstNotes);
+    }
+
+    private void SubmitMelody(string firstPass, string secondPass)
+    {
+        pianoService.SavePass(firstPass, secondPass);
     }
 }
