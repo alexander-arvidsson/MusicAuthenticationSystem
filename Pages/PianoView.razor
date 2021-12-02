@@ -36,9 +36,9 @@
     public bool isLogin { get; set; }
     private string path = "../PianoResources/";
     private string[] octave = { "c4", "c4s", "d4", "d4s", "e4", "f4", "f4s", "g4", "g4s", "a4", "a4s", "b4" };
-    private List<string> storedNotes = new List<string>();
+    private Dictionary<int, KeyValuePair<string, int>> storedNotes = new Dictionary<int, KeyValuePair<string, int>>();
     private string firstNotes = "";
-    private List<string> confirmNotes = new List<string>();
+    private Dictionary<int, KeyValuePair<string, int>> confirmNotes = new Dictionary<int, KeyValuePair<string, int>>();
     private string secondNotes = "";
     private User user = new User();
     private string msg = "";
@@ -46,6 +46,7 @@
     private bool isDone = false;
     private bool isFirst = true;
     private bool willRetry = false;
+    private int index = 0;
 
     //---------------------- *** Piano functionality starts here *** ----------------------
     private async Task PlaySound(string note, bool isFirst)
@@ -53,22 +54,24 @@
         if (isFirst)
         {
             firstNotes += note;
-            storedNotes.Add(note);
+            StoreNotes(note, storedNotes);
         }
         else
         {
             secondNotes += note;
-            confirmNotes.Add(note);
+            StoreNotes(note, confirmNotes);
         }
+
         await _jsRuntime.InvokeAsync<string>("PlayAudio", note);
     }
 
     private async Task PlayBack(bool isFirst)
     {
-        List<string> notes = isFirst ? storedNotes : confirmNotes;
+        Dictionary<int, KeyValuePair<string, int>> notes = isFirst ? storedNotes : confirmNotes;
+        pianoService.StopTimer();
         foreach (var n in notes)
         {
-            await PlayBackAsync(n);
+            await PlayBackAsync(n.Value.Key, n.Value.Value);
         }
     }
 
@@ -80,25 +83,27 @@
             secondNotes = "";
             storedNotes.Clear();
             confirmNotes.Clear();
+            index = 0;
 
         }
         else if (isFirst)
         {
             storedNotes.Clear();
             firstNotes = "";
+            index = 0;
         }
         else
         {
             secondNotes = "";
             confirmNotes.Clear();
+            index = 0;
         }
     }
 
-    //Find a smoother solution
-    private async Task PlayBackAsync(string note)
+    private async Task PlayBackAsync(string note, int time)
     {
         await _jsRuntime.InvokeAsync<string>("PlayAudio", note);
-        await Task.Delay(500);
+        await Task.Delay(time);
     }
 
     private string CreatePath(string source)
@@ -125,6 +130,7 @@
             PianoLoginPass();
             isFirst = false;
             isDone = true;
+            index = 0;
         }
         else
         {
@@ -144,8 +150,23 @@
     private bool IsEightMelodyNote(string melody)
     {
         string m = Regex.Replace(melody, @"[\d]*s*", "");
-        Console.WriteLine(m);
         return m.Length >= 8;
+    }
+
+    private void StoreNotes(string note, Dictionary<int, KeyValuePair<string, int>> notes)
+    {
+        int length = notes.Count();
+        int prev = notes.Count() - 1;
+        int n = pianoService.StartNote();
+        int noteLength = n >= 1000 ? 1000 : 450;
+
+        if (length != 0)
+        {
+            notes[prev] = new KeyValuePair<string, int>(notes[prev].Key, noteLength);
+
+        }
+        notes.Add(index, new KeyValuePair<string, int>(note, noteLength));
+        index++;
     }
 
     //---------------------- *** Login & Creation functions *** ----------------------
