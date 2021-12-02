@@ -6,14 +6,6 @@
 @inject CreationRepository  CreationRepo
 
 <div class="row_bg_light">
-    @foreach (var pk in octave)
-    {
-        <audio id=@pk src=@CreatePath(pk) />
-        <button class=@GetNoteClass(pk) @onclick="(() => PlaySound(pk, isFirst))">@GetNoteName(pk)</button>
-    }
-</div>
-
-<div class="row_bg_light">
     <button @onclick="(() => PlayBack(isFirst))">Playback</button>
     <button @onclick="(() => ClearPiano(isFirst, willRetry))">Clear Music</button>
     @if (!isDone)
@@ -28,6 +20,14 @@
     @if (isDone && !isLogin)
     {
         <button class="btn btn-primary mb-1" @onclick="(() => SubmitMelody(firstNotes, secondNotes))">Confirm Melody</button>
+    }
+</div>
+
+<div class="row_bg_light">
+    @foreach (var pk in octave)
+    {
+        <audio id=@pk src=@CreatePath(pk) />
+        <button class=@GetNoteClass(pk) @onclick="(() => PlaySound(pk, isFirst))">@GetNoteName(pk)</button>
     }
 </div>
 

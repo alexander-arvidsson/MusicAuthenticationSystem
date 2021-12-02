@@ -20,11 +20,11 @@
                 <input class="m-1" type="text" id="username" @bind-value="@user.Username" />
             </EditForm>
         </div>
+        <button class="btn btn-primary mb-1" @onclick="(() => Create())">Confirm and Submit</button>
+        <p hidden="@messageHandler">@msg</p>
     </div>
 </div>
 <PianoView></PianoView>
-<button class="btn btn-primary mb-1" @onclick="(() => Create())">Confirm and Submit</button>
-<p hidden="@messageHandler">@msg</p>
 
 @code {
 

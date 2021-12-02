@@ -19,11 +19,11 @@
                 <input type="text" id="username" @bind-value="@user.Username" />
             </EditForm>
         </div>
+        <button class="btn btn-primary mb-1" @onclick="(() => Login())">Submit and Login</button>
+        <p hidden="@messageHandler">@message</p>
     </div>
 </div>
 <PianoView isLogin="true"></PianoView>
-<button class="btn btn-primary mb-1" @onclick="(() => Login())">Submit and Login</button>
-<p hidden="@messageHandler">@message</p>
 
 @code {
     User user = new User();
