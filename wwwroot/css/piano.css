@@ -1,10 +1,9 @@
-﻿
-.whiteNote {
+﻿.whiteNote {
     color: black;
-    padding-top: 20%;
+    padding-top: 14%;
     padding-bottom: 2%;
-    padding-right: 2%;
-    padding-left: 2%;
+    padding-right: 1.5%;
+    padding-left: 1.5%;
     background-color: white;
     cursor: pointer;
     float: left;
@@ -13,8 +12,8 @@
 .blackNote {
     color: white;
     position: relative;
-    padding-top: 10%;
-    padding-bottom: 3%;
+    padding-top: 7%;
+    padding-bottom: 2%;
     margin-inline: -2%;
     background-color: black;
     border-color: black;
