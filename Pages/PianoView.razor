@@ -24,7 +24,7 @@
 </div>
 
 <div class="row_bg_light">
-    @foreach (var pk in octave)
+    @foreach (var pk in pianoService.PianoNotes())
     {
         <audio id=@pk src=@CreatePath(pk) />
         <button class=@GetNoteClass(pk) @onclick="(() => PlaySound(pk, isFirst))">@GetNoteName(pk)</button>
@@ -35,7 +35,6 @@
     [Parameter]
     public bool isLogin { get; set; }
     private string path = "../PianoResources/";
-    private string[] octave = { "c4", "c4s", "d4", "d4s", "e4", "f4", "f4s", "g4", "g4s", "a4", "a4s", "b4" };
     private Dictionary<int, KeyValuePair<string, int>> storedNotes = new Dictionary<int, KeyValuePair<string, int>>();
     private string firstNotes = "";
     private Dictionary<int, KeyValuePair<string, int>> confirmNotes = new Dictionary<int, KeyValuePair<string, int>>();
@@ -108,7 +107,7 @@
 
     private string CreatePath(string source)
     {
-        return path + source + ".wav";
+        return path + source + ".mp3";
     }
 
     private string GetNoteClass(string note)
@@ -158,7 +157,7 @@
         int length = notes.Count();
         int prev = notes.Count() - 1;
         int n = pianoService.StartNote();
-        int noteLength = n >= 1000 ? 1000 : 450;
+        int noteLength = n >= 1000 ? 1000 : n;
 
         if (length != 0)
         {

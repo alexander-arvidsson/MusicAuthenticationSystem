@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 
 namespace MusicAuthenticationSystem.Data
 {
@@ -9,6 +10,29 @@ namespace MusicAuthenticationSystem.Data
         public string firstPass;
         public string secondPass;
         private Stopwatch watch = new Stopwatch();
+        private string[] notes = { "c", "cs", "d", "ds", "e", "f", "fs", "g", "gs", "a", "as", "b" };
+
+        public List<string> PianoNotes ()
+        {
+            int noteSize = 37;
+            List<string> newNotes = new List<string>();
+            int pos = 0;
+            int oct = 3;
+            for(int i = 0; i < noteSize; i++)
+            {
+                if(pos >= 12)
+                {
+                    pos = 0;
+                    oct++;
+                }
+
+                string n = CreateNote(notes[pos], oct);
+                newNotes.Add(n);
+                pos++;
+            }
+
+            return newNotes;
+        }
 
         public void SaveNote(string note)
         {
@@ -28,7 +52,7 @@ namespace MusicAuthenticationSystem.Data
 
         public int StartNote()
         {
-            if((int) watch.ElapsedMilliseconds != 0)
+            if(Convert.ToInt32(watch.ElapsedMilliseconds) != 0)
             {
                 int timer = NoteEnd();
                 watch.Restart();
@@ -40,7 +64,12 @@ namespace MusicAuthenticationSystem.Data
             }
         }
 
-        public int NoteEnd()
+        public void StopTimer()
+        {
+            watch.Reset();
+        }
+
+        private int NoteEnd()
         {
             watch.Stop();
             TimeSpan stopped = watch.Elapsed;
@@ -48,10 +77,16 @@ namespace MusicAuthenticationSystem.Data
             return time;
         }
 
-        public void StopTimer()
+        private string CreateNote(string note, int oct)
         {
-            watch.Reset();
+            int length = note.Length == 1 ? 1 : 2;
+            if(length == 1)
+            {
+                return note += oct.ToString();
+            } else
+            {
+                return note.Replace("s", oct.ToString() + "s");
+            }
         }
-
     }
 }
