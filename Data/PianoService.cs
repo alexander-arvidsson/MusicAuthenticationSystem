@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.Text;
 
 namespace MusicAuthenticationSystem.Data
 {
@@ -11,7 +11,6 @@ namespace MusicAuthenticationSystem.Data
         public string secondPass;
         private Stopwatch watch = new Stopwatch();
         private string[] notes = { "c", "cs", "d", "ds", "e", "f", "fs", "g", "gs", "a", "as", "b" };
-
         public List<string> PianoNotes ()
         {
             int noteSize = 37;
@@ -45,12 +44,13 @@ namespace MusicAuthenticationSystem.Data
             secondPass = second;
         }
 
-        public void ClearNotes(List<string> pNotes)
+        public void StartOver()
         {
-            pNotes.Clear();
+            firstPass = null;
+            secondPass = null;
         }
 
-        public int StartNote()
+        public int StartNote(int noteSpeed)
         {
             if(Convert.ToInt32(watch.ElapsedMilliseconds) != 0)
             {
@@ -60,7 +60,7 @@ namespace MusicAuthenticationSystem.Data
             } else
             {
                 watch.Start();
-                return 1000;
+                return noteSpeed;
             }
         }
 
@@ -79,13 +79,19 @@ namespace MusicAuthenticationSystem.Data
 
         private string CreateNote(string note, int oct)
         {
+            StringBuilder buildNote = new StringBuilder();
             int length = note.Length == 1 ? 1 : 2;
             if(length == 1)
             {
-                return note += oct.ToString();
+                buildNote.Append(note);
+                buildNote.Append(oct.ToString());
+                return buildNote.ToString();
             } else
             {
-                return note.Replace("s", oct.ToString() + "s");
+                buildNote.Append(note[0]);
+                buildNote.Append(oct.ToString());
+                buildNote.Append("s");
+                return buildNote.ToString();
             }
         }
     }

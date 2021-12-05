@@ -1,13 +1,12 @@
 ﻿@page "/create"
 
 @using MusicAuthenticationSystem.Data
-
 @inject UserRepository UserRepo
 @inject CreationRepository  CreationRepo
 @inject PianoService pianoService
 @inject NavigationManager navManager
 
-<h2>Welcome, please enter a new username and melokey</h2>
+<h2>Welcome, please enter a new username and melokey.</h2>
 
 <div class="row m-4">
     <div class="col-5 bg-light m-2 justify-content-start">
@@ -29,32 +28,48 @@
 <PianoView></PianoView>
 
 @code {
-
-    User user = new User();
-    string msg = "";
-    bool messageHandler = true;
+    private User user = new User();
+    private string msg = "";
+    private bool messageHandler = true;
 
     private async Task Create()
     {
-        String firstPass = pianoService.firstPass;
-        String secondPass = pianoService.secondPass;
+        string userName = user.Username;
+        string firstPass = pianoService.firstPass;
+        string secondPass = pianoService.secondPass;
 
-        if (IsNull(firstPass, secondPass))
+        if(userName == null || userName == "")
         {
-            msg = "Both melody passwords must first be confirmed!";
+            msg = "Username cannot be empty!";
             messageHandler = false;
         }
-        else if (Confirmation(firstPass, secondPass))
+        else if (PasswordIsNull(firstPass, secondPass))
         {
-            CreationRepo.CreateUserAsync(user);
+            msg = "Both melokeys must first be confirmed!";
             messageHandler = false;
-            msg = "Account is created! Will redirect in a few seconds";
-            await Task.Delay(3000);
-            navManager.NavigateTo("/");
+        }
+        else if (SamePasswords(firstPass, secondPass))
+        {
+            bool succesful = await CreationRepo.CreateUserAsync(user);
+            messageHandler = false;
+            await CreationResults(succesful);
         }
     }
 
-    private bool Confirmation(string firstPass, string secondPass)
+    private async Task CreationResults(bool succesful)
+    {
+        if(succesful)
+        {
+            msg = "Account is created! Will redirect in a few seconds.";
+            await Task.Delay(3000);
+            navManager.NavigateTo("/");
+        } else
+        {
+            msg = "Username already exists! Please create a new username";
+        }
+    }
+
+    private bool SamePasswords(string firstPass, string secondPass)
     {
         if (firstPass.Equals(secondPass))
         {
@@ -63,16 +78,16 @@
         }
         else
         {
-            msg = "Melodies do not match";
+            msg = "Melokeys do not match!";
             messageHandler = false;
             return false;
         }
     }
 
-    private bool IsNull(string first, string second)
+    private bool PasswordIsNull(string first, string second)
     {
-        String firstPass = pianoService.firstPass;
-        String secondPass = pianoService.secondPass;
+        string firstPass = pianoService.firstPass;
+        string secondPass = pianoService.secondPass;
 
         return firstPass == null || secondPass == null;
     }
