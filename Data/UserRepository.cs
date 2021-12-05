@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MusicAuthenticationSystem.Data
 {
@@ -30,16 +27,19 @@ namespace MusicAuthenticationSystem.Data
 
         public bool MatchPassword(User user, string enteredPassword)
         {
-            byte[] key = GetIV(user);
+            bool userExists = context.Users.Any(u => u.Username == user.Username);
 
-            string correctPassword = GetPassword(user);
-            byte[] correctPasswordBytes = Convert.FromBase64String(correctPassword);
-            
-            string decryptedPassword = hash.Decryption(correctPasswordBytes, key);
-         
-            if (enteredPassword.Equals(decryptedPassword))
-                return true;
-            
+            if (userExists)
+            {
+                byte[] key = GetIV(user);
+
+                string correctPassword = GetPassword(user);
+                byte[] correctPasswordBytes = Convert.FromBase64String(correctPassword);
+                string decryptedPassword = hash.Decryption(correctPasswordBytes, key);
+
+                return enteredPassword.Equals(decryptedPassword);
+            }
+
             return false;
         }
     }

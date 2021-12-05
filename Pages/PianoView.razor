@@ -1,16 +1,27 @@
 ﻿@using MusicAuthenticationSystem.Data
-@using System.Text.RegularExpressions
 @inject PianoService pianoService
 @inject IJSRuntime _jsRuntime
 @inject UserRepository UserRepo
 @inject CreationRepository  CreationRepo
 
+<p>Playback speed</p>
 <div class="row_bg_light">
-    <button @onclick="(() => PlayBack(isFirst))">Playback</button>
-    <button @onclick="(() => ClearPiano(isFirst, willRetry))">Clear Music</button>
+    @foreach (var speed in new[] { PlaybackSpeed.slow, PlaybackSpeed.med, PlaybackSpeed.fast })
+    {
+        <input type="radio" id="sc" name="choice" value="@speed" checked="@PlaybackSpeed.fast" @onchange="@(() => { speedChoice = speed; })" />
+        <label for="sc">@speed.ToString().ToUpper()</label>
+    }
+
+    @if (!isLogin && !isFirst)
+    {
+        <button @onclick="(() => ChangeState())">@GetMelodyState()</button>
+    }
+
+    <button @onclick="(() => PlayBack((int) speedChoice))">Playback</button>
+    <button @onclick="(() => ClearPiano(isFirst, false))">Clear Music</button>
     @if (!isDone)
     {
-        <button @onclick="(()=> ConfirmNotes(firstNotes))">Confirm Melody</button>
+        <button @onclick="(()=> ConfirmNotes())">Confirm Melody</button>
         <p hidden="@messageHandler">@msg</p>
     }
     @if (isDone)
@@ -19,7 +30,7 @@
     }
     @if (isDone && !isLogin)
     {
-        <button class="btn btn-primary mb-1" @onclick="(() => SubmitMelody(firstNotes, secondNotes))">Confirm Melody</button>
+        <button class="btn btn-primary mb-1" @onclick="(() => SubmitMelody())">Confirm Melody</button>
     }
 </div>
 
@@ -31,20 +42,30 @@
     }
 </div>
 
+@if (!isLogin)
+{
+    <div class="row_bg_light">
+        @foreach (var ck in GetMeloKey())
+        {
+            <button @onclick="@(() => RemoveTone(ck))">@GetNoteName(ck.Value.Key)</button>
+        }
+    </div>
+}
+
 @code {
     [Parameter]
     public bool isLogin { get; set; }
     private string path = "../PianoResources/";
-    private Dictionary<int, KeyValuePair<string, int>> storedNotes = new Dictionary<int, KeyValuePair<string, int>>();
-    private string firstNotes = "";
-    private Dictionary<int, KeyValuePair<string, int>> confirmNotes = new Dictionary<int, KeyValuePair<string, int>>();
-    private string secondNotes = "";
+    private enum PlaybackSpeed { slow = 750, med = 500, fast = 250 };
+    private PlaybackSpeed speedChoice = PlaybackSpeed.fast;
+    private Dictionary<int, KeyValuePair<string, int>> melokey = new Dictionary<int, KeyValuePair<string, int>>();
+    private Dictionary<int, KeyValuePair<string, int>> confirmMelokey = new Dictionary<int, KeyValuePair<string, int>>();
     private User user = new User();
     private string msg = "";
     private bool messageHandler = true;
     private bool isDone = false;
     private bool isFirst = true;
-    private bool willRetry = false;
+    private bool isFirstState = true;
     private int index = 0;
 
     //---------------------- *** Piano functionality starts here *** ----------------------
@@ -52,25 +73,34 @@
     {
         if (isFirst)
         {
-            firstNotes += note;
-            StoreNotes(note, storedNotes);
+            StoreNotes(note, melokey, (int)speedChoice);
         }
         else
         {
-            secondNotes += note;
-            StoreNotes(note, confirmNotes);
+            StoreNotes(note, confirmMelokey, (int)speedChoice);
         }
 
         await _jsRuntime.InvokeAsync<string>("PlayAudio", note);
     }
 
-    private async Task PlayBack(bool isFirst)
+    private async Task PlayBack(int speed)
     {
-        Dictionary<int, KeyValuePair<string, int>> notes = isFirst ? storedNotes : confirmNotes;
+        Dictionary<int, KeyValuePair<string, int>> notes =
+            new Dictionary<int, KeyValuePair<string, int>>();
+        if (!isLogin)
+        {
+            notes = isFirstState ? melokey : confirmMelokey;
+        }
+        else
+        {
+            notes = melokey;
+        }
+
         pianoService.StopTimer();
         foreach (var n in notes)
         {
-            await PlayBackAsync(n.Value.Key, n.Value.Value);
+            int noteLength = n.Value.Value == 1000 ? n.Value.Value : speed;
+            await PlayBackAsync(n.Value.Key, noteLength);
         }
     }
 
@@ -78,23 +108,20 @@
     {
         if (willRetry)
         {
-            firstNotes = "";
-            secondNotes = "";
-            storedNotes.Clear();
-            confirmNotes.Clear();
+            melokey.Clear();
+            confirmMelokey.Clear();
             index = 0;
+            isFirstState = true;
 
         }
         else if (isFirst)
         {
-            storedNotes.Clear();
-            firstNotes = "";
+            melokey.Clear();
             index = 0;
         }
         else
         {
-            secondNotes = "";
-            confirmNotes.Clear();
+            confirmMelokey.Clear();
             index = 0;
         }
     }
@@ -121,13 +148,13 @@
         return rep.ToUpper();
     }
 
-    private void ConfirmNotes(string melody)
+    private void ConfirmNotes()
     {
-        if (IsEightMelodyNote(melody))
+        if (IsEightMelodyNote(GetPassword(melokey)))
         {
-            messageHandler = false;
-            PianoLoginPass();
+            if (isLogin) { PianoLoginPass(); }
             isFirst = false;
+            ChangeState();
             isDone = true;
             index = 0;
         }
@@ -140,10 +167,11 @@
 
     private void Retry(bool first)
     {
-        willRetry = true;
-        ClearPiano(first, willRetry);
+        ClearPiano(first, true);
+        pianoService.StartOver();
         isFirst = true;
         isDone = false;
+        messageHandler = true;
     }
 
     private bool IsEightMelodyNote(string melody)
@@ -152,31 +180,87 @@
         return m.Length >= 8;
     }
 
-    private void StoreNotes(string note, Dictionary<int, KeyValuePair<string, int>> notes)
+    private void StoreNotes(string note, Dictionary<int, KeyValuePair<string, int>> notes, int speedChoice)
     {
         int length = notes.Count();
         int prev = notes.Count() - 1;
-        int n = pianoService.StartNote();
+        int n = pianoService.StartNote(speedChoice);
         int noteLength = n >= 1000 ? 1000 : n;
 
         if (length != 0)
         {
             notes[prev] = new KeyValuePair<string, int>(notes[prev].Key, noteLength);
-
         }
+
         notes.Add(index, new KeyValuePair<string, int>(note, noteLength));
         index++;
     }
 
+    private void ChangeState()
+    {
+        if (isFirstState)
+        {
+            isFirstState = false;
+        }
+        else
+        {
+            isFirstState = true;
+        }
+    }
+
+    private string GetMelodyState()
+    {
+        return isFirstState ? "First Melokey" : "Second Melokey";
+    }
+
+    private void RemoveTone(KeyValuePair<int, KeyValuePair<string, int>> note)
+    {
+        int n = note.Key;
+        Dictionary<int, KeyValuePair<string, int>> mkey = GetMeloKey();
+        mkey.Remove(note.Key);
+
+        for (; n < mkey.Count; n++)
+        {
+            var temp = mkey[n + 1];
+            mkey.Add(n, temp);
+            mkey.Remove(n + 1);
+        }
+
+        index = n;
+    }
+
+    private Dictionary<int, KeyValuePair<string, int>> GetMeloKey()
+    {
+        if (isFirst)
+        {
+            return melokey;
+        }
+        else
+        {
+            return confirmMelokey;
+        }
+    }
+
     //---------------------- *** Login & Creation functions *** ----------------------
+
+    private string GetPassword(Dictionary<int, KeyValuePair<string, int>> notes)
+    {
+        StringBuilder meloPass = new StringBuilder();
+        foreach (var n in notes)
+        {
+            meloPass.Append(n.Value.Key);
+        }
+
+        return meloPass.ToString();
+    }
 
     private void PianoLoginPass()
     {
-        pianoService.SaveNote(firstNotes);
+        pianoService.SaveNote(GetPassword(melokey));
     }
 
-    private void SubmitMelody(string firstPass, string secondPass)
+    private void SubmitMelody()
     {
-        pianoService.SavePass(firstPass, secondPass);
+        pianoService.SavePass(GetPassword(melokey), GetPassword(confirmMelokey));
     }
 }

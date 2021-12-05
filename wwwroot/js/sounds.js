@@ -1,6 +1,4 @@
-﻿var same = new Audio();
-
-window.PlayAudio = (elementName) => {
+﻿window.PlayAudio = (elementName) => {
         var audio = document.getElementById(elementName).cloneNode(true);
         audio.play();
 }

@@ -20,7 +20,7 @@
             </EditForm>
         </div>
         <div class="col-10 bg-light m-2 justify-content-start">
-            <button class="btn btn-primary mb-1" @onclick="(() => Login())">Submit and Login</button>
+            <button class="btn btn-primary mb-1" @onclick="(() => Authenticate())">Submit and Login</button>
             <p hidden="@messageHandler">@message</p>
         </div>
     </div>
@@ -28,33 +28,32 @@
 <PianoView isLogin="true"></PianoView>
 
 @code {
-    User user = new User();
-    string message = "";
-    bool messageHandler = true;
-
-    private void Login()
-    {
-        Authenticate();
-    }
+    private User user = new User();
+    private string message = "";
+    private bool messageHandler = true;
 
     private void Authenticate()
     {
         string pass = pianoService.firstPass;
-        if (pass == null)
+        string userName = user.Username;
+        string nullCheck = userName == null || userName == ""? 
+            "Username cannot be empty!" : "Melody must first be entered and confirmed!";
+
+        if (pass == null || userName == null || userName == "")
         {
             messageHandler = false;
-            message = "Melody must first be entered and confirmed!";
+            message = nullCheck;
         }
         else if (UserRepo.MatchPassword(user, pass))
         {
             messageHandler = false;
             navManager.NavigateTo("/userpage/" + user.Username);
 
-    }
+        }
         else
         {
             messageHandler = false;
-            message = "Incorrect melody, please start over";
+            message = "Incorrect user or melody, please start over";
         }
     }
 }
