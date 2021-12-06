@@ -62,7 +62,9 @@
         {
             msg = "Account is created! Will redirect in a few seconds.";
             await Task.Delay(3000);
+            pianoService.StartOver();
             navManager.NavigateTo("/");
+
         } else
         {
             msg = "Username already exists! Please create a new username";
