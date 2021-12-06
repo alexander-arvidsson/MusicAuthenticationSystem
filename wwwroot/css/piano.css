@@ -7,6 +7,7 @@
     background-color: white;
     cursor: pointer;
     float: left;
+    outline: 0 !important;
 }
 
 .blackNote {
@@ -22,6 +23,7 @@
     cursor: pointer;
     float: left;
     box-shadow: 3px 3px grey;
+    outline: 0 !important;
 }
 
 p {
@@ -40,6 +42,7 @@ p {
         background-color: white;
         cursor: pointer;
         float: left;
+        outline: 0 !important;
     }
 
     .blackNote {
@@ -55,6 +58,7 @@ p {
         cursor: pointer;
         float: left;
         box-shadow: 3px 3px grey;
+        outline: 0 !important;
     }
 
     p {
