@@ -21,7 +21,7 @@
     <button @onclick="(() => ClearPiano(isFirst, false))">Clear Music</button>
     @if (!isDone)
     {
-        <button @onclick="(()=> ConfirmNotes())">Confirm Melody</button>
+        <button @onclick="(()=> ConfirmNotes())">Confirm Melokey</button>
         <p hidden="@messageHandler">@msg</p>
     }
     @if (isDone)
@@ -30,7 +30,7 @@
     }
     @if (isDone && !isLogin)
     {
-        <button class="btn btn-primary mb-1" @onclick="(() => SubmitMelody())">Confirm Melody</button>
+        <button class="btn btn-primary mb-1" @onclick="(() => SubmitMelody())">Confirm Melokey</button>
     }
 </div>
 
@@ -165,7 +165,7 @@
         else
         {
             messageHandler = false;
-            msg = "Melody must be at least eight notes!";
+            msg = "Melokey must be at least eight notes!";
         }
     }
 
