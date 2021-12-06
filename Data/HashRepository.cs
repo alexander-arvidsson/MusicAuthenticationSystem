@@ -18,7 +18,9 @@ namespace MusicAuthenticationSystem.Data
             byte[] passwordbytes = Encoding.ASCII.GetBytes(password);
 
             if (!IsSessionStarted())
+            {
                 GenerateKey();
+            }
 
             ICryptoTransform transform = aes.CreateEncryptor(GetKey(), IV);
 
@@ -58,12 +60,8 @@ namespace MusicAuthenticationSystem.Data
 
         public bool IsSessionStarted()
         {
-            string key = File.ReadAllText("file.txt");
-
-            if(key != "" || key != null)
-                return true;
-
-            return false;
+            bool hasKey = File.Exists("file.txt");
+            return hasKey;
         }
 
         public byte[] GetKey()
