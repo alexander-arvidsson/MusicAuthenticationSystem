@@ -50,8 +50,8 @@
         }
         else if (SamePasswords(firstPass, secondPass))
         {
-            bool succesful = await CreationRepo.CreateUserAsync(user);
             messageHandler = false;
+            bool succesful = await CreationRepo.CreateUserAsync(user, firstPass);
             await CreationResults(succesful);
         }
     }
