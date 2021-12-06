@@ -14,10 +14,10 @@
 
     @if (!isLogin && !isFirst)
     {
-        <button @onclick="(() => ChangeState())">@GetMelodyState()</button>
+        <button @onclick="(() => PlayBack((int) speedChoice, 0))">First Melokey</button>
     }
 
-    <button @onclick="(() => PlayBack((int) speedChoice))">Playback</button>
+    <button @onclick="(() => PlayBack((int) speedChoice, 1))">Playback</button>
     <button @onclick="(() => ClearPiano(isFirst, false))">Clear Music</button>
     @if (!isDone)
     {
@@ -83,17 +83,21 @@
         await _jsRuntime.InvokeAsync<string>("PlayAudio", note);
     }
 
-    private async Task PlayBack(int speed)
+    private async Task PlayBack(int speed, int state)
     {
+
         Dictionary<int, KeyValuePair<string, int>> notes =
             new Dictionary<int, KeyValuePair<string, int>>();
-        if (!isLogin)
-        {
-            notes = isFirstState ? melokey : confirmMelokey;
-        }
-        else
+        if (!isLogin && state == 0)
         {
             notes = melokey;
+        }
+        else if(isFirst)
+        {
+            notes = melokey;
+        } else
+        {
+            notes = confirmMelokey;
         }
 
         pianoService.StopTimer();
@@ -206,11 +210,6 @@
         {
             isFirstState = true;
         }
-    }
-
-    private string GetMelodyState()
-    {
-        return isFirstState ? "First Melokey" : "Second Melokey";
     }
 
     private void RemoveTone(KeyValuePair<int, KeyValuePair<string, int>> note)
